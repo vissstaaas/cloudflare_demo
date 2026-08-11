@@ -1,8 +1,434 @@
-    <div class="avatar">❤️</div>
-    <h1>爱你一万年</h1>
-    <p class="bio">Forever & Always | 由 Cloudflare 边缘节点永久保存</p>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>爱你一万年 ❤️ | 专属告白</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-    <div class="links">
-      <a href="javascript:void(0)" onclick="alert('爱你的心意已通过 Cloudflare 全球 300+ 节点节点加密分发！')" class="link-btn">💌 点击查看情书</a>
-      <a href="https://github.com" target="_blank" class="link-btn">🐙 GitHub 源码见证</a>
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #09090e;
+      color: #ffffff;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* 🌌 动态深空背景渐变 */
+    .bg-gradient {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 50% 30%, #3b0764 0%, #1e1b4b 40%, #090d16 100%);
+      z-index: -2;
+    }
+
+    /* 💖 3D 浮动爱心与光斑 */
+    .glowing-blob {
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.6;
+      z-index: -1;
+      animation: floatAura 10s ease-in-out infinite alternate;
+    }
+    .blob-pink { background: #f43f5e; top: 10%; left: 15%; }
+    .blob-purple { background: #8b5cf6; bottom: 10%; right: 15%; animation-delay: -5s; }
+
+    @keyframes floatAura {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(40px, 50px) scale(1.15); }
+    }
+
+    /* Canvas 粒子流星雨与飘落爱心 */
+    #particle-canvas {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 🔮 浪漫毛玻璃卡片 */
+    .container {
+      position: relative;
+      z-index: 10;
+      width: 90%;
+      max-width: 440px;
+      padding: 42px 32px;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 32px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      text-align: center;
+      transition: all 0.5s ease;
+    }
+
+    .container:hover {
+      box-shadow: 0 35px 70px rgba(244, 63, 94, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      border-color: rgba(244, 63, 94, 0.3);
+    }
+
+    /* 心跳 3D Icon */
+    .heart-icon {
+      font-size: 64px;
+      display: inline-block;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 0 16px rgba(244, 63, 94, 0.8));
+      animation: heartbeat 1.35s infinite ease-in-out;
+      cursor: pointer;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      14% { transform: scale(1.22); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.15); }
+      70% { transform: scale(1); }
+    }
+
+    h1.title {
+      font-family: 'Ma Shan Zheng', cursive, sans-serif;
+      font-size: 38px;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #fff 0%, #f472b6 50%, #fb7185 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+      text-shadow: 0 0 30px rgba(244, 63, 94, 0.3);
+    }
+
+    p.subtitle {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.75);
+      line-height: 1.6;
+      margin-bottom: 28px;
+      font-weight: 300;
+    }
+
+    /* 计时器与浪漫文案 */
+    .timer-box {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 16px 20px;
+      margin-bottom: 32px;
+    }
+
+    .timer-title {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+
+    .timer-digits {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f43f5e;
+      letter-spacing: 1px;
+      text-shadow: 0 0 12px rgba(244, 63, 94, 0.5);
+    }
+
+    /* 按钮组 */
+    .btn-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      min-height: 52px;
+    }
+
+    .btn {
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      outline: none;
+    }
+
+    .btn-yes {
+      background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+      color: #ffffff;
+      box-shadow: 0 10px 25px rgba(244, 63, 94, 0.4);
+      flex: 1;
+    }
+
+    .btn-yes:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 15px 30px rgba(244, 63, 94, 0.6);
+    }
+
+    .btn-no {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      position: relative;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    /* 告白弹窗密语 */
+    .letter-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .letter-modal.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .letter-card {
+      background: linear-gradient(145deg, rgba(30, 27, 75, 0.9), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      border-radius: 28px;
+      padding: 36px 28px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 50px rgba(244, 63, 94, 0.3);
+      transform: scale(0.8);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .letter-modal.show .letter-card {
+      transform: scale(1);
+    }
+
+    .letter-title {
+      font-family: 'Ma Shan Zheng', cursive, sans-serif;
+      font-size: 32px;
+      color: #f472b6;
+      margin-bottom: 16px;
+    }
+
+    .letter-body {
+      font-size: 15px;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 24px;
+      text-align: left;
+      font-weight: 300;
+    }
+
+    .letter-close {
+      background: linear-gradient(135deg, #f43f5e, #e11d48);
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(244, 63, 94, 0.4);
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 20px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.35);
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-gradient"></div>
+  <div class="glowing-blob blob-pink"></div>
+  <div class="glowing-blob blob-purple"></div>
+
+  <canvas id="particle-canvas"></canvas>
+
+  <div class="container" id="main-card">
+    <div class="heart-icon" id="heart-btn" title="点击发射爱心！">💖</div>
+    <h1 class="title">爱你一万年</h1>
+    <p class="subtitle">“宇宙庞大，星河长明，而你是我漫长岁月里，最想留住的偏爱与唯一。”</p>
+
+    <div class="timer-box">
+      <div class="timer-title">爱意正在实时加载中</div>
+      <div class="timer-digits" id="love-timer">无数个心动的瞬间...</div>
     </div>
+
+    <div class="btn-group">
+      <button class="btn btn-yes" id="yes-btn">我愿意 ❤️</button>
+      <button class="btn btn-no" id="no-btn">考虑一下 😜</button>
+    </div>
+  </div>
+
+  <!-- 告白信弹窗 -->
+  <div class="letter-modal" id="modal">
+    <div class="letter-card">
+      <div style="font-size: 48px; margin-bottom: 8px;">🌹</div>
+      <div class="letter-title">终我一生，爱你一人</div>
+      <div class="letter-body">
+        如果爱是一场漫长的旅程，我愿跨越所有的星辰与大海，把最好的温柔全给于你。<br><br>
+        代码可以重构，但对你的爱永远没有 Bug。从这一刻起，让我陪你走过四季的更迭与人生的漫漫长路。<br><br>
+        <strong>—— 专属契约生效中 ✨</strong>
+      </div>
+      <button class="letter-close" onclick="closeModal()">拥抱幸福 ❤️</button>
+    </div>
+  </div>
+
+  <div class="footer">Hosted on Cloudflare Edge • Permanently Encrypted</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script>
+    // 1. 动态心跳计时器
+    function updateTimer() {
+      const startDate = new Date('2026-01-01T00:00:00'); // 可根据需要修改起始日期
+      const now = new Date();
+      const diff = Math.abs(now - startDate);
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / 1000 / 60) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+      
+      document.getElementById('love-timer').innerText = 
+        `${days}天 ${hours}小时 ${minutes}分 ${seconds}秒`;
+    }
+    setInterval(updateTimer, 1000);
+    updateTimer();
+
+    // 2. 调皮的“考虑一下”按钮逃跑动画
+    const noBtn = document.getElementById('no-btn');
+    let noBtnEscapes = 0;
+
+    function runAway() {
+      noBtnEscapes++;
+      const x = (Math.random() - 0.5) * 200;
+      const y = (Math.random() - 0.5) * 120;
+      noBtn.style.transform = `translate(${x}px, ${y}px)`;
+
+      if (noBtnEscapes === 3) {
+        noBtn.innerText = "逃不掉啦 😜";
+      } else if (noBtnEscapes >= 5) {
+        noBtn.innerText = "必须选愿意 ❤️";
+      }
+    }
+
+    noBtn.addEventListener('mouseenter', runAway);
+    noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); runAway(); });
+
+    // 3. 点击“我愿意”触发五彩烟花与告白信
+    const yesBtn = document.getElementById('yes-btn');
+    const modal = document.getElementById('modal');
+
+    function celebrate() {
+      // 触发 Confetti 烟花
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#f43f5e', '#ec4899', '#8b5cf6', '#ffffff', '#ffd1dc']
+      });
+
+      setTimeout(() => {
+        confetti({
+          particleCount: 60,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 }
+        });
+        confetti({
+          particleCount: 60,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 }
+        });
+      }, 250);
+
+      modal.classList.add('show');
+    }
+
+    yesBtn.addEventListener('click', celebrate);
+    document.getElementById('heart-btn').addEventListener('click', celebrate);
+
+    function closeModal() {
+      modal.classList.remove('show');
+    }
+
+    // 4. 背景浮动爱心 Canvas 粒子特效
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    for (let i = 0; i < 35; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 12 + 6,
+        speedY: Math.random() * 0.8 + 0.3,
+        opacity: Math.random() * 0.5 + 0.3
+      });
+    }
+
+    function drawHeart(x, y, size, opacity) {
+      ctx.save();
+      ctx.globalAlpha = opacity;
+      ctx.fillStyle = '#f43f5e';
+      ctx.beginPath();
+      const topCurveHeight = size * 0.3;
+      ctx.moveTo(x, y + topCurveHeight);
+      ctx.bezierCurveTo(x, y, x - size / 2, y, x - size / 2, y + topCurveHeight);
+      ctx.bezierCurveTo(x - size / 2, y + (size + topCurveHeight) / 2, x, y + size, x, y + size);
+      ctx.bezierCurveTo(x, y + size, x + size / 2, y + (size + topCurveHeight) / 2, x + size / 2, y + topCurveHeight);
+      ctx.bezierCurveTo(x + size / 2, y, x, y, x, y + topCurveHeight);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function renderParticles() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.y -= p.speedY;
+        if (p.y < -20) {
+          p.y = height + 20;
+          p.x = Math.random() * width;
+        }
+        drawHeart(p.x, p.y, p.size, p.opacity);
+      });
+      requestAnimationFrame(renderParticles);
+    }
+    renderParticles();
+  </script>
+</body>
+</html>
