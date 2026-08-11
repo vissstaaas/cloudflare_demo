@@ -118,8 +118,23 @@
       font-size: 15px;
       color: rgba(255, 255, 255, 0.75);
       line-height: 1.6;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       font-weight: 300;
+    }
+
+    /* 实时点赞数 Display */
+    .likes-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-size: 13px;
+      color: #f472b6;
+      margin-bottom: 24px;
+      font-weight: 600;
     }
 
     /* 计时器与浪漫文案 */
@@ -275,6 +290,12 @@
     <h1 class="title">爱你一万年</h1>
     <p class="subtitle">“宇宙庞大，星河长明，而你是我漫长岁月里，最想留住的偏爱与唯一。”</p>
 
+    <div class="likes-badge">
+      <span>已收到</span>
+      <span id="likes-count">0</span>
+      <span>次爱心回应 ❤️</span>
+    </div>
+
     <div class="timer-box">
       <div class="timer-title">爱意正在实时加载中</div>
       <div class="timer-digits" id="love-timer">无数个心动的瞬间...</div>
@@ -304,9 +325,33 @@
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
-    // 1. 动态心跳计时器
+    // 1. 实时点赞/回应数 API 交互
+    async function loadLikes() {
+      try {
+        const res = await fetch('/api/like');
+        const data = await res.json();
+        if (data && typeof data.likes === 'number') {
+          document.getElementById('likes-count').innerText = data.likes;
+        }
+      } catch (e) {
+        console.log('Local preview mode: API unavailable');
+      }
+    }
+    loadLikes();
+
+    async function sendLike() {
+      try {
+        const res = await fetch('/api/like', { method: 'POST' });
+        const data = await res.json();
+        if (data && typeof data.likes === 'number') {
+          document.getElementById('likes-count').innerText = data.likes;
+        }
+      } catch (e) {}
+    }
+
+    // 2. 动态心跳计时器
     function updateTimer() {
-      const startDate = new Date('2026-01-01T00:00:00'); // 可根据需要修改起始日期
+      const startDate = new Date('2026-01-01T00:00:00');
       const now = new Date();
       const diff = Math.abs(now - startDate);
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -320,7 +365,7 @@
     setInterval(updateTimer, 1000);
     updateTimer();
 
-    // 2. 调皮的“考虑一下”按钮逃跑动画
+    // 3. 逃跑按钮
     const noBtn = document.getElementById('no-btn');
     let noBtnEscapes = 0;
 
@@ -340,12 +385,13 @@
     noBtn.addEventListener('mouseenter', runAway);
     noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); runAway(); });
 
-    // 3. 点击“我愿意”触发五彩烟花与告白信
+    // 4. 点击“我愿意”触发烟花与点赞自增
     const yesBtn = document.getElementById('yes-btn');
     const modal = document.getElementById('modal');
 
     function celebrate() {
-      // 触发 Confetti 烟花
+      sendLike();
+
       confetti({
         particleCount: 120,
         spread: 80,
@@ -378,7 +424,7 @@
       modal.classList.remove('show');
     }
 
-    // 4. 背景浮动爱心 Canvas 粒子特效
+    // 5. 背景浮动爱心 Canvas
     const canvas = document.getElementById('particle-canvas');
     const ctx = canvas.getContext('2d');
     let width = canvas.width = window.innerWidth;
