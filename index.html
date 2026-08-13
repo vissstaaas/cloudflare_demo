@@ -202,6 +202,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      margin-bottom: 32px;
     }
 
     .tech-tag {
@@ -219,6 +220,102 @@
       background: rgba(255, 255, 255, 0.1);
       color: #ffffff;
       border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* 💬 留言板样式 */
+    .guestbook-section {
+      text-align: left;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 24px;
+    }
+
+    .guestbook-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .gb-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: #ffffff;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .gb-input:focus {
+      border-color: var(--accent-orange);
+    }
+
+    .gb-btn {
+      padding: 12px;
+      background: rgba(243, 128, 32, 0.15);
+      border: 1px solid rgba(243, 128, 32, 0.3);
+      color: var(--accent-orange);
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .gb-btn:hover {
+      background: var(--accent-orange);
+      color: #ffffff;
+    }
+
+    .guestbook-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .gb-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+
+    .gb-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .gb-author {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+
+    .gb-time {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .gb-content {
+      font-size: 13px;
+      color: #e2e8f0;
+      line-height: 1.5;
+      word-break: break-all;
+    }
+
+    .gb-empty {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 20px 0;
     }
 
     /* 页脚 */
@@ -286,6 +383,19 @@
       <span class="tech-tag">🗄️ KV Storage</span>
       <span class="tech-tag">🛡️ Global CDN</span>
     </div>
+
+    <!-- 💬 极简云端留言板 -->
+    <div class="guestbook-section">
+      <div class="tech-stack-title">💬 云端留言板 (Cloudflare KV 存储)</div>
+      <div class="guestbook-form">
+        <input type="text" id="gb-name" placeholder="您的昵称 (可选)" class="gb-input" maxlength="20">
+        <input type="text" id="gb-msg" placeholder="写下一条云端留言..." class="gb-input" maxlength="100">
+        <button id="gb-submit-btn" class="gb-btn">发送留言</button>
+      </div>
+      <div class="guestbook-list" id="gb-list">
+        <div class="gb-empty">加载留言中...</div>
+      </div>
+    </div>
   </div>
 
   <div class="footer">
@@ -297,6 +407,10 @@
     const likesCountEl = document.getElementById('likes-count');
     const latencyValEl = document.getElementById('latency-val');
     const likeBtn = document.getElementById('like-btn');
+    const gbNameEl = document.getElementById('gb-name');
+    const gbMsgEl = document.getElementById('gb-msg');
+    const gbSubmitBtn = document.getElementById('gb-submit-btn');
+    const gbListEl = document.getElementById('gb-list');
 
     // 1. 获取全网点赞数与边缘计算延迟
     async function fetchStats() {
@@ -339,8 +453,82 @@
       }
     }
 
+    // 3. 读取留言列表 (GET /api/guestbook)
+    async function fetchGuestbook() {
+      try {
+        const res = await fetch('/api/guestbook');
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.list)) {
+          renderGuestbook(data.list);
+        } else {
+          gbListEl.innerHTML = '<div class="gb-empty">暂无留言，抢个沙发吧！</div>';
+        }
+      } catch (e) {
+        gbListEl.innerHTML = '<div class="gb-empty">本地预览模式 (部署到 Cloudflare 生效)</div>';
+      }
+    }
+
+    function renderGuestbook(list) {
+      if (!list || list.length === 0) {
+        gbListEl.innerHTML = '<div class="gb-empty">暂无留言，抢个沙发吧！</div>';
+        return;
+      }
+      gbListEl.innerHTML = list.map(item => `
+        <div class="gb-item">
+          <div class="gb-header">
+            <span class="gb-author">${escapeHtml(item.nickname || '匿名访客')}</span>
+            <span class="gb-time">${escapeHtml(item.time || '')}</span>
+          </div>
+          <div class="gb-content">${escapeHtml(item.message)}</div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // 4. 发送留言 (POST /api/guestbook)
+    async function submitGuestbook() {
+      const nickname = gbNameEl.value.trim();
+      const message = gbMsgEl.value.trim();
+      if (!message) {
+        alert('请输入留言内容');
+        return;
+      }
+
+      gbSubmitBtn.disabled = true;
+      gbSubmitBtn.innerText = '发送中...';
+
+      try {
+        const res = await fetch('/api/guestbook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nickname, message })
+        });
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.list)) {
+          gbMsgEl.value = '';
+          renderGuestbook(data.list);
+        } else {
+          alert(data.error || '提交失败');
+        }
+      } catch (e) {
+        alert('提交失败：本地预览模式下无后端 API 响应');
+      } finally {
+        gbSubmitBtn.disabled = false;
+        gbSubmitBtn.innerText = '发送留言';
+      }
+    }
+
     likeBtn.addEventListener('click', sendLike);
+    gbSubmitBtn.addEventListener('click', submitGuestbook);
+    gbMsgEl.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') submitGuestbook();
+    });
+
     fetchStats();
+    fetchGuestbook();
   </script>
 </body>
 </html>
